@@ -45,9 +45,16 @@ func NewDNSHandler() *DNSHandler {
 	return handler
 }
 
-func (handler *DNSHandler) Query(ctx context.Context, binary string) ([]string, error) {
+func (handler *DNSHandler) Query(ctx context.Context, domainName string, recordType RecordType) ([]string, error) {
 	msg := new(dns.Msg)
-	msg.SetQuestion(dns.Fqdn(binary), dns.TypeA)
+	switch recordType {
+	case IPV4:
+		msg.SetQuestion(dns.Fqdn(domainName), dns.TypeA)
+	case IPV6:
+		msg.SetQuestion(dns.Fqdn(domainName), dns.TypeAAAA)
+	default:
+		msg.SetQuestion(dns.Fqdn(domainName), dns.TypeA)
+	}
 	fmt.Printf("Inside query!")
 	var response *dns.Msg
 	var err error
@@ -73,4 +80,8 @@ func (handler *DNSHandler) Query(ctx context.Context, binary string) ([]string, 
 		res = append(res, rr.String())
 	}
 	return res, nil
+}
+
+func HandleQueryViaExternalServer(ctx context.Context, domainName string, recordType RecordType, handler *DNSHandler) ([]string, error) {
+	return handler.Query(ctx, domainName, recordType)
 }
