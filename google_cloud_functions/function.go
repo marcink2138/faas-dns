@@ -1,18 +1,28 @@
 package faas_dns
 
 import (
+	"context"
 	"encoding/json"
 	"example.com/faas-dns/internal"
 	"fmt"
 	"github.com/GoogleCloudPlatform/functions-framework-go/functions"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"log"
 	"net/http"
+	"time"
 )
 
+var mongoDbConnectionString = "mongodb+srv://dnsFaas:dnsFaas@faas-dns-db-cluster.bilqfgp.mongodb.net/?retryWrites=true&w=majority"
 var dnsHandler *internal.DNSHandler
+var mongoDBHandler *internal.MongoDbHandler
 
 func init() {
 	functions.HTTP("HandleDnsQuery", handleDnsQuery)
 	dnsHandler = internal.NewDNSHandler()
+	mongoClient := createMongoDBClient()
+	dnsCollection := mongoClient.Database("faas-dns").Collection("dnsRecords")
+	mongoDBHandler = internal.NewMongoDBHandler(dnsCollection)
 }
 
 func handleDnsQuery(w http.ResponseWriter, r *http.Request) {
@@ -60,4 +70,18 @@ func handleGetDnsQuery(r *http.Request) ([]string, error) {
 	}
 	fmt.Println(body)
 	return body, nil
+}
+
+func createMongoDBClient() *mongo.Client {
+	serverAPIOptions := options.ServerAPI(options.ServerAPIVersion1)
+	clientOptions := options.Client().
+		ApplyURI(mongoDbConnectionString).
+		SetServerAPIOptions(serverAPIOptions)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	client, err := mongo.Connect(ctx, clientOptions)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return client
 }
