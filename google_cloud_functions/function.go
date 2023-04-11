@@ -1,4 +1,4 @@
-package faas_dns
+package google_cloud_functions
 
 import (
 	"context"

@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	_ "example.com/faas-dns"
+	_ "example.com/faas-dns/google_cloud_functions"
 	// Blank-import the function package so the init() runs
 	"github.com/GoogleCloudPlatform/functions-framework-go/funcframework"
 )
