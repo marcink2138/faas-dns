@@ -2,6 +2,7 @@ package internal
 
 import (
 	"context"
+	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -9,7 +10,7 @@ import (
 	"time"
 )
 
-var mongoDbConnectionString = "mongodb+srv://dnsFaas:dnsFaas@dns-faas-cluster.jhcnux0.mongodb.net/?retryWrites=true&w=majority"
+var mongoDbConnectionString = "mongodb+srv://dnsFaas:dnsFaas@dns-faas-db-cluster.ntuj1pv.mongodb.net/?retryWrites=true&w=majority"
 
 type MongoDbHandler struct {
 	dnsCollection *mongo.Collection
@@ -24,11 +25,13 @@ func (dbHandler *MongoDbHandler) handleQuery(ctx context.Context, domainName str
 	_ = options.Find().SetProjection(projection)
 	cur, err := dbHandler.dnsCollection.Find(ctx, filter)
 	if err != nil {
+		fmt.Printf("Error occured during database call: %e. Next step -> External call", err)
 		return nil, err
 	}
 	var results []MongoDnsRecord
 	err = cur.All(ctx, &results)
 	if len(results) == 0 {
+		fmt.Println("Results not found in mongo. Next step -> External call")
 		return nil, mongo.ErrNoDocuments
 	}
 	finalRes := make([]string, 0)
@@ -79,6 +82,7 @@ func HandleDnsQueryLocally(ctx context.Context, domainName string, recordType Re
 }
 
 func CreateMongoCollectionConn() *mongo.Collection {
+	fmt.Println("Creating MongoDB conn")
 	client := createMongoDBClient()
 	collection := client.Database("faas-dns").Collection("dnsRecords")
 	return collection

@@ -15,6 +15,7 @@ type DNSHandler struct {
 }
 
 func NewDNSHandler() *DNSHandler {
+	fmt.Println("Creating external dns query handler")
 	timeout := 4
 
 	handler := &DNSHandler{}
@@ -55,7 +56,6 @@ func (handler *DNSHandler) Query(ctx context.Context, domainName string, recordT
 	default:
 		msg.SetQuestion(dns.Fqdn(domainName), dns.TypeA)
 	}
-	fmt.Printf("Inside query!")
 	var response *dns.Msg
 	var err error
 
@@ -72,7 +72,7 @@ func (handler *DNSHandler) Query(ctx context.Context, domainName string, recordT
 	}
 
 	if err != nil {
-		fmt.Printf("Err %e\n", err)
+		fmt.Printf("Error recived during external query call %e\n", err)
 		return nil, err
 	}
 	res := make([]string, 0)
