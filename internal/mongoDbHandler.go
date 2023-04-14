@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-var mongoDbConnectionString = "mongodb+srv://dnsFaas:dnsFaas@dns-faas-db-cluster.ntuj1pv.mongodb.net/?retryWrites=true&w=majority"
+var mongoDbConnectionString = "mongodb+srv://jsciga:adminadmin@cluster0123.5qdbn5x.mongodb.net/test"
 
 type MongoDbHandler struct {
 	dnsCollection *mongo.Collection
